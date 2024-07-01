@@ -5,9 +5,15 @@ import { OpenAIEmbeddings } from "@langchain/openai"
 import { PineconeStore } from "@langchain/pinecone"
 import { convertToAscii } from "./utils"
 
-const pc = new Pinecone({
+export const pc = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
 })
+
+export const embeddings = new OpenAIEmbeddings({
+  openAIApiKey: process.env.OPENAI_API_KEY,
+})
+
+export const pineconeIndex = pc.Index(process.env.PINECONE_INDEX!)
 
 export async function loadFileIntoPinecone(file: File, file_key: string) {
   // Load and parse the PDF
@@ -26,13 +32,6 @@ export async function loadFileIntoPinecone(file: File, file_key: string) {
     })
   )
 
-  // Create OpenAI embeddings
-  const embeddings = new OpenAIEmbeddings({
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  })
-
-  const pineconeIndex = pc.Index(process.env.PINECONE_INDEX!)
-
   // Create a Pinecone store with the documents and embeddings
   const vectorStore = await PineconeStore.fromDocuments(docs, embeddings, {
     pineconeIndex,
@@ -40,4 +39,20 @@ export async function loadFileIntoPinecone(file: File, file_key: string) {
   })
 
   return vectorStore
+}
+
+export const getContext = async (query: string, fileKey: string) => {
+  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+    pineconeIndex,
+    namespace: convertToAscii(fileKey),
+  })
+
+  const results = await vectorStore.similaritySearch(query, 4)
+
+  let context = ""
+  for (const result of results) {
+    context += `${result.pageContent}\n`
+  }
+
+  return context.trim()
 }
