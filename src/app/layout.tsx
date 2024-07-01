@@ -23,8 +23,10 @@ export default function RootLayout({
           <head>
             <link rel='icon' href='/favicon.svg' />
           </head>
-          <body className={inter.className}>{children}</body>
-          <Toaster />
+          <body className={inter.className}>
+            {children}
+            <Toaster />
+          </body>
         </html>
       </Providers>
     </ClerkProvider>
