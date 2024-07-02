@@ -1,7 +1,9 @@
 import FileUpload from "@/components/FileUpload"
+import SubscriptionButton from "@/components/SubscriptionButton"
 import { Button } from "@/components/ui/button"
 import { db } from "@/lib/db"
 import { chats } from "@/lib/db/schema"
+import { checkSubscription } from "@/lib/subscription"
 import { UserButton } from "@clerk/nextjs"
 import { auth } from "@clerk/nextjs/server"
 import { eq } from "drizzle-orm"
@@ -11,6 +13,7 @@ import Link from "next/link"
 export default async function Home() {
   const { userId } = await auth()
   const isAuth = !!userId
+  const isPro = await checkSubscription()
   let firstChat
   if (userId) {
     firstChat = await db.select().from(chats).where(eq(chats.userId, userId))
@@ -35,6 +38,9 @@ export default async function Home() {
                     Go to Chats <ArrowRight className='ml-2' />
                   </Button>
                 </Link>
+                <div className='ml-3'>
+                  <SubscriptionButton isPro={isPro} />
+                </div>
               </>
             )}
           </div>
