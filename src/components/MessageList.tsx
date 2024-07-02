@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils"
 import { Message } from "ai/react"
 import { Loader2 } from "lucide-react"
 import React from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 type Props = {
   isLoading: boolean
@@ -18,20 +20,37 @@ const MessageList = ({ messages, isLoading }: Props) => {
   }
   if (!messages) return <></>
   return (
-    <div className='flex flex-col gap-2 px-4'>
+    <div className='flex flex-col gap-4 px-4 py-2 '>
       {messages.map((message) => {
         return (
           <div
             key={message.id}
             className={cn("flex", {
-              "justify-end pl-10": message.role === "user",
-              "justify-start pr-10": message.role === "assistant",
+              "justify-end": message.role === "user",
+              "justify-start": message.role === "assistant",
             })}>
             <div
-              className={cn("rounded-lg px-3 text-sm py-1 shadow-md ring-1 ring-gray-900/10", {
+              className={cn("rounded-lg px-4 py-2 shadow-md", {
                 "bg-blue-600 text-white": message.role === "user",
               })}>
-              <p>{message.content}</p>
+              {message.role === "user" ? (
+                <p className='text-sm leading-relaxed'>{message.content}</p>
+              ) : (
+                <ReactMarkdown
+                  className='text-sm leading-relaxed'
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code({ node, className, children, ...props }) {
+                      return (
+                        <code {...props} className={className}>
+                          {children}
+                        </code>
+                      )
+                    },
+                  }}>
+                  {message.content}
+                </ReactMarkdown>
+              )}
             </div>
           </div>
         )
