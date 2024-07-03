@@ -1,4 +1,4 @@
-# ChatPDF-AI Chat with pdf using AI
+# ChatPDF-AI RAG - Chat with pdf documents using AI
 
 ## Introduction
 
